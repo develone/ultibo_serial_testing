@@ -1,7 +1,7 @@
 program SerialConnection;
 
 {$mode objfpc}{$H+}
-
+{$linklib gps}
 { Example 13 Serial Connection                                                 }
 {                                                                              }
 { This example uses the serial (UART) device in the Raspberry Pi to connect    }
@@ -38,6 +38,7 @@ program SerialConnection;
 
 {Declare some units used by this example.}
 uses
+  RaspberryPi2,
   GlobalConst,
   GlobalTypes,
   Platform,
@@ -49,8 +50,11 @@ uses
   SysUtils,
   GlobalConfig, {Include the global configuration unit so we can modify some parameters}
   Logging,
+  Syscalls,
   Serial;   {Include the Serial unit so we can open, read and write to the device}
+{$linklib gps}
 
+procedure test(Count:Longword;pchar:Pointer); cdecl; external 'libgps' name 'test';
 {We'll need a window handle plus a couple of others.}
 var
  Count:LongWord;
@@ -106,7 +110,7 @@ begin
       begin
        {If we received a carriage return then write our characters to the console}
        ConsoleWindowWriteLn(WindowHandle,'Received a line: ' + Characters);
-
+       
        {Check for the word Quit}
        if Uppercase(Characters) = 'QUIT' then
         begin
@@ -127,6 +131,7 @@ begin
        //SerialWrite(PChar(Characters),Length(Characters),Count);
 
        {Now clear the characters and wait for more}
+       test(Length(Characters),PChar(Characters));
        Characters:='';
       end
      else

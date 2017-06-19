@@ -6,10 +6,10 @@
 #include<stdlib.h> //exit(0);
 #include<arpa/inet.h>
 #include<sys/socket.h>
- 
-#define SERVER "127.0.0.1"
+
+#define SERVER "192.168.1.185"
 #define BUFLEN 512  //Max length of buffer
-#define PORT 8888   //The port on which to send data
+#define PORT 514   //The port on which to send data
 
 void die(char *s)
 {

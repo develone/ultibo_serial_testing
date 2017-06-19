@@ -59,6 +59,8 @@ uses
   FileSystem,
   FATFS,
   MMC,
+  ServerUnit,
+  Winsock2,
   Serial;   {Include the Serial unit so we can open, read and write to the device}
 {$linklib gps}
 
@@ -69,13 +71,48 @@ var
  Character:Char;
  Characters:String;
  WindowHandle:TWindowHandle;
-
+ WSAData:TWSAData;
 
 begin
+
+
 while not DirectoryExists('C:\') do
   begin
    {Sleep for a second}
    Sleep(1000);
+  end;
+ {Initialize our UDP Server} 
+ ServerInit;
+ 
+ {Start our UDP Server}
+ //ServerStart;
+ {Perform the normal Winsock startup process}
+ FillChar(WSAData,SizeOf(TWSAData),0);
+ if WSAStartup(WINSOCK_VERSION,WSAData) = ERROR_SUCCESS then
+  begin
+   {Create our TDemoUDPListener object}
+   DemoUDPListener:=TDemoUDPListener.Create;
+    {Set the minimum and maximum number of threads to service requests. The TWinsock2UDPListener
+    has a pool of threads which can be dynamically expanded to accomodate extra requests and will
+    also shrink when no requests are happening. The Min and Max values determine the number of
+    threads for each case}
+   DemoUDPListener.Threads.Min:=5;
+   DemoUDPListener.Threads.Max:=10;
+  
+   {Set the buffer size to 1024 (The maximum for UDP SysLog). The TWinsock2UDPListener also
+    has a dynamic buffer pool which contains preallocated buffers based on a size you specify.
+    
+    Since UDP is a connectionless protocol, all communication occurs as messages or datagrams.
+    Many common services that use UDP will have a fixed length or well defined message size so
+    buffers can be allocated that suit the required size}
+   DemoUDPListener.BufferSize:=1024;
+   
+   {Set the port to listen on (514 for SysLog)}
+   DemoUDPListener.BoundPort:=514;
+   
+   {Set the server to active (Listener)} 
+   DemoUDPListener.Active:=True;
+   
   end;
  {Create a console window at full size}
  WindowHandle:=ConsoleWindowCreate(ConsoleDeviceGetDefault,CONSOLE_POSITION_TOPLEFT,True);
@@ -89,85 +126,98 @@ while not DirectoryExists('C:\') do
  LoggingConsoleDeviceAdd(ConsoleDeviceGetDefault);
  LoggingDeviceSetDefault(LoggingDeviceFindByType(LOGGING_TYPE_CONSOLE));
  
- {First we need to open the serial device and set the speed and other parameters.
+{First we need to open the serial device and set the speed and other parameters.
+We'll use SerialOpen and specify 9600 as the speed with 8 data bits, 1 stop bit,
+no parity and no flow control. The constants used here can be found in the GlobalConst
+unit.
 
-  We can use the SerialOpen function in the Platform unit to open the default serial
-  device or we can use the SerialDeviceOpen function in the Serial unit if we need
-  to specify which device to open.
+We can use the SerialOpen function in the Platform unit to open the default serial
+device or we can use the SerialDeviceOpen function in the Serial unit if we need
+to specify which device to open.
 
-  We'll use SerialOpen and specify 9600 as the speed with 8 data bits, 1 stop bit,
-  no parity and no flow control. The constants used here can be found in the GlobalConst
-  unit.
+The last 2 parameters allow setting the size of the transmit and receive buffers,
+passing 0 means use the default size.}
+if SerialOpen(9600,SERIAL_DATA_8BIT,SERIAL_STOP_1BIT,SERIAL_PARITY_NONE,SERIAL_FLOW_NONE,0,0) = ERROR_SUCCESS then
+	begin
 
-  The last 2 parameters allow setting the size of the transmit and receive buffers,
-  passing 0 means use the default size.}
- if SerialOpen(9600,SERIAL_DATA_8BIT,SERIAL_STOP_1BIT,SERIAL_PARITY_NONE,SERIAL_FLOW_NONE,0,0) = ERROR_SUCCESS then
-  begin
+		{Opened successfully, display a message}
+		ConsoleWindowWriteLn(WindowHandle,'Serial device opened, type some text in your terminal program and press Enter');
 
-   {Opened successfully, display a message}
-   ConsoleWindowWriteLn(WindowHandle,'Serial device opened, type some text in your terminal program and press Enter');
+		{Setup our starting point}
+		Count:=0;
+		Characters:='';
 
-   {Setup our starting point}
-   Count:=0;
-   Characters:='';
+		{Loop endlessly waiting for data}
+		while True do
+			begin
+			{Read from the serial device using the SerialRead function, to be safe we
+			would normally check the result of this function before using the value}
+			SerialRead(@Character,SizeOf(Character),Count);
 
-   {Loop endlessly waiting for data}
-   while True do
-    begin
-     {Read from the serial device using the SerialRead function, to be safe we
-      would normally check the result of this function before using the value}
-     SerialRead(@Character,SizeOf(Character),Count);
-
-     {Check what character we received}
-     if Character = #13 then
-      begin
-       {If we received a carriage return then write our characters to the console}
-       ConsoleWindowWriteLn(WindowHandle,'Received a line: ' + Characters);
+			{Check what character we received}
+			if Character = #13 then
+			begin
+				{If we received a carriage return then write our characters to the console}
+				ConsoleWindowWriteLn(WindowHandle,'Received a line: ' + Characters);
        
-       {Check for the word Quit}
-       if Uppercase(Characters) = 'QUIT' then
-        begin
-         {If received then say goodbye and exit our loop}
-         Characters:='Goodbye!' + Chr(13) + Chr(10);
-         SerialWrite(PChar(Characters),Length(Characters),Count);
+				{Check for the word Quit}
+				if Uppercase(Characters) = 'QUIT' then
+					begin
+					{If received then say goodbye and exit our loop}
+					Characters:='Goodbye!' + Chr(13) + Chr(10);
+					SerialWrite(PChar(Characters),Length(Characters),Count);
 
-         {Wait for the data to be sent}
-         Sleep(1000);
+					{Wait for the data to be sent}
+					Sleep(1000);
 
-         Break;
-        end;
+					Break;
+				end;
 
-       {Add a carriage return and line feed}
-       Characters:=Characters + Chr(13) + Chr(10);
+			{Add a carriage return and line feed}
+			Characters:=Characters + Chr(13) + Chr(10);
 
-       {And echo them back to the serial device using SerialWrite}
-       //SerialWrite(PChar(Characters),Length(Characters),Count);
+			{And echo them back to the serial device using SerialWrite}
+			//SerialWrite(PChar(Characters),Length(Characters),Count);
 
-       {Now clear the characters and wait for more}
-       test(Length(Characters),PChar(Characters));
-       Characters:='';
-      end
-     else
-      begin
-       {Add the character to what we have already recevied}
-       Characters:=Characters + Character;
-      end;
+			{Now clear the characters and wait for more}
+			test(Length(Characters),PChar(Characters));
+			Characters:='';
+			LoggingOutput('Logging message sent by ' + ThreadGetName(ThreadGetCurrent) + ' at ' + DateTimeToStr(Now));
+		{End of while Loop endlessly waiting for data}
+		end
+      
+	else
+	begin
+		{Add the character to what we have already recevied}
+		Characters:=Characters + Character;
+	end;
+	
+	{No need to sleep on each loop, SerialRead will wait until data is received}
+	end;
 
-     {No need to sleep on each loop, SerialRead will wait until data is received}
-    end;
+	{Close the serial device using SerialClose}
+	SerialClose;
 
-   {Close the serial device using SerialClose}
-   SerialClose;
+	ConsoleWindowWriteLn(WindowHandle,'Serial device closed');
+	end
+	else
+	begin
+		{Must have been an error, print a message on the console}
+		ConsoleWindowWriteLn(WindowHandle,'An error occurred opening the serial device');
+	end;
 
-   ConsoleWindowWriteLn(WindowHandle,'Serial device closed');
-  end
- else
-  begin
-   {Must have been an error, print a message on the console}
-   ConsoleWindowWriteLn(WindowHandle,'An error occurred opening the serial device');
-  end;
+	{Halt the thread if we exit the loop} 
 
- {Halt the thread if we exit the loop}
+
+
+
+
+
+  
+
+
+
+
  ThreadHalt(0);
 end.
 

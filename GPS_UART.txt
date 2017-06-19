@@ -1,0 +1,27 @@
+UART
+TX	3
+RX	2
+
+GPS
+RX	2
+TX	3
+
+	A	B
+	1	1
+RX	2	2	RX
+         
+TX	3 	3	TX
+	4	4
+GRD	5	5
+3v3	6	6
+
+GPS (top), UART (bottom)
+
+set_property -dict { PACKAGE_PIN U12 IOSTANDARD LVCMOS33 } [get_ports i_gps_3df]
+set_property -dict { PACKAGE_PIN V12 IOSTANDARD LVCMOS33 } [get_ports o_gps_tx]
+set_property -dict { PACKAGE_PIN V10 IOSTANDARD LVCMOS33 } [get_ports i_gps_rx]
+set_property -dict { PACKAGE_PIN V11 IOSTANDARD LVCMOS33 } [get_ports i_gps_pps]
+set_property -dict { PACKAGE_PIN U14 IOSTANDARD LVCMOS33 } [get_ports i_aux_rts]
+set_property -dict { PACKAGE_PIN V14 IOSTANDARD LVCMOS33 } [get_ports o_aux_tx]
+set_property -dict { PACKAGE_PIN T13 IOSTANDARD LVCMOS33 } [get_ports i_aux_rx]
+set_property -dict { PACKAGE_PIN U13 IOSTANDARD LVCMOS33 } [get_ports o_aux_cts]

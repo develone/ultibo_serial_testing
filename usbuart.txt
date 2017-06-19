@@ -1,0 +1,39 @@
+usb uart
+tx 3
+rx 2
+grd 5
+3.3 6
+
+shell 1
+
+vidal@ws009:~/wkg/ARTY_GITHUB/openarty/sw/board
+sudo ../host/netuart /dev/ttyUSB1
+Listening on port 6510
+Setting up TTY
+
+shell 2
+minicom -s
+/dev/ttyUSB2
+115200 8N1
+
+shell 3
+
+vidal@ws009:~/wkg/ARTY_GITHUB/openarty/sw/board$ ../host/zipload -r exmulti
+/dev/ttyUSB0
+9600 8N1
+Hardware FLow Control No
+Software FLow Control No
+
+Raspberrypi	1	3v3
+Raspberrypi	6	Ground
+
+Raspberrypi	bcm14	8	TXD
+Raspberrypi	bcm15	10	RXD
+
+Raspberrypi	14	Ground
+
+RPi2B or RPi3B
+		Raspberrypi	bcm14	8	TXD								rx 	2						
+		Raspberrypi	bcm15	10	RXD								tx	3
+Ultibo RPi																PModUSBUART		USB	Raspbian Rpi3B
+		Raspberrypi	14	Ground									ground	5

@@ -51,6 +51,14 @@ uses
   GlobalConfig, {Include the global configuration unit so we can modify some parameters}
   Logging,
   Syscalls,
+  { needed for telnet }
+  Shell,
+  ShellFilesystem,
+  ShellUpdate,
+  { needed for telnet }
+  FileSystem,
+  FATFS,
+  MMC,
   Serial;   {Include the Serial unit so we can open, read and write to the device}
 {$linklib gps}
 
@@ -64,6 +72,11 @@ var
 
 
 begin
+while not DirectoryExists('C:\') do
+  begin
+   {Sleep for a second}
+   Sleep(1000);
+  end;
  {Create a console window at full size}
  WindowHandle:=ConsoleWindowCreate(ConsoleDeviceGetDefault,CONSOLE_POSITION_TOPLEFT,True);
 

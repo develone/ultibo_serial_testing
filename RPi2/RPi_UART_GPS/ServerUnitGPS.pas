@@ -12,6 +12,9 @@ unit ServerUnitGPS;
 interface
 
 uses
+  RaspberryPi2,
+  Framebuffer,
+  SysUtils,
   Serial,
   BCM2836,
   BCM2709,
@@ -20,11 +23,11 @@ uses
   GlobalTypes,
   Platform,
   Threads,
-  SysUtils,
   Classes,
   Console,   {Include the console unit so we can output logging to the screen}
+  Syscalls,
   Winsock2;  {Include the Winsock2 unit to provide access to the TWinsock2UDPListener class}
-
+ 
   
 {There are primarily two ways to use the TWinsock2UDPListener class to create a UDP server.
 
@@ -229,12 +232,16 @@ begin
    {At this point our UDP server has been started independently of our current thread and will
     continue to run by itself even if this thread terminates. For the sake of the example we will
     go into a loop and send logging messages which should be received by our server}
-    LoggingOutput('Logging message sent by ' + ThreadGetName(ThreadGetCurrent) + 'flg '+ IntToStr(flg) + ' at ' + DateTimeToStr(Now));
+    LoggingOutput('Logging message sent by ' + ThreadGetName(ThreadGetCurrent) + ' flg '+ IntToStr(flg) + ' at ' + DateTimeToStr(Now));
     if SerialOpen(9600,SERIAL_DATA_8BIT,SERIAL_STOP_1BIT,SERIAL_PARITY_NONE,SERIAL_FLOW_NONE,0,0) = ERROR_SUCCESS then
 	begin
 	  flg:=1;
 	  LoggingOutput('Logging message sent by ' + ThreadGetName(ThreadGetCurrent) + 'flg '+ IntToStr(flg) + ' at ' + DateTimeToStr(Now));
       LoggingOutput('Logging message sent by ' + ThreadGetName(ThreadGetCurrent) + ' Uart opened successfully at ' + DateTimeToStr(Now));
+      ConsoleWindowWriteLn(DemoUDPListener.FWindowHandle,'Uart opened successfully'); 
+      {Setup our starting point}
+      Count:=0;
+      Characters:='';
     end;
    while True do
     begin
@@ -242,19 +249,22 @@ begin
      if Character = #13 then
 			begin
 			Characters:=Characters + Chr(13) + Chr(10);
- 
-			//LoggingOutput(Characters);
-			LoggingOutput('Logging message sent by ' + ThreadGetName(ThreadGetCurrent) + ' at ' + DateTimeToStr(Now)+' '+Characters);
-			Characters:='';
-			end;
-     //Sleep(1000);
-     //LoggingOutput('Logging message sent by ' + ThreadGetName(ThreadGetCurrent) + ' at ' + DateTimeToStr(Now));
+            ConsoleWindowWriteLn(DemoUDPListener.FWindowHandle,'Received a line: ' + Characters);
+			LoggingOutput(Characters);
+			 
+            Characters:='';
+	
+    end
+    else
+    begin
+       {Add the character to what we have already recevied}
+       Characters:=Characters + Character;
+    end
     end;
-    
    {Destroy the UDP Listener}
    DemoUDPListener.Free;
   end; 
-end;
+  end;
 
 
 end.

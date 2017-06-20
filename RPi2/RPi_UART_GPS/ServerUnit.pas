@@ -144,7 +144,7 @@ begin
     server by calling the SendDataTo function and passing the address and port to send to.
     
     Try it out yourself by setting the address to something valid}
-   //SendDataTo('192.168.123.123',514,PChar(MessageText),Length(MessageText)); 
+   //SendDataTo('192.168.123.123',8888,PChar(MessageText),Length(MessageText)); 
    SendDataTo('192.168.1.181',8888,PChar(MessageText),Length(MessageText));
   end;
 end;
@@ -211,8 +211,8 @@ begin
     buffers can be allocated that suit the required size}
    DemoUDPListener.BufferSize:=1024;
    
-   {Set the port to listen on (514 for SysLog)}
-   DemoUDPListener.BoundPort:=514;
+   {Set the port to listen on (8888 for SysLog)}
+   DemoUDPListener.BoundPort:=8888;
    
    {Set the server to active (Listener)} 
    DemoUDPListener.Active:=True;

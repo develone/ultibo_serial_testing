@@ -7,7 +7,7 @@
 #include<arpa/inet.h>
 #include<sys/socket.h>
  
-#define BUFLEN 512  //Max length of buffer
+#define BUFLEN 1024  //Max length of buffer
 #define PORT 8888   //The port on which to listen for incoming data
  
 void die(char *s)

@@ -145,6 +145,7 @@ begin
     
     Try it out yourself by setting the address to something valid}
    //SendDataTo('192.168.123.123',514,PChar(MessageText),Length(MessageText)); 
+   SendDataTo('192.168.1.181',8888,PChar(MessageText),Length(MessageText));
   end;
 end;
 

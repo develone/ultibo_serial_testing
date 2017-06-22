@@ -1,7 +1,7 @@
 unit ServerUnitGPS;
 
 {$mode objfpc}{$H+}
-
+{$linklib gps}
 { Advanced example - UDP Server                                                }
 {                                                                              }
 { This file contains the main functionality for our UDP server example.        }
@@ -27,7 +27,7 @@ uses
   Console,   {Include the console unit so we can output logging to the screen}
   Syscalls,
   Winsock2;  {Include the Winsock2 unit to provide access to the TWinsock2UDPListener class}
- 
+procedure test(Count:Longword;pchar:Pointer); cdecl; external 'libgps' name 'test'; 
   
 {There are primarily two ways to use the TWinsock2UDPListener class to create a UDP server.
 
@@ -75,7 +75,7 @@ begin
  inherited Create;
  
  {Create a console window}
- FWindowHandle:=ConsoleWindowCreate(ConsoleDeviceGetDefault,CONSOLE_POSITION_FULL,False);
+ FWindowHandle:=ConsoleWindowCreate(ConsoleDeviceGetDefault,CONSOLE_POSITION_FULL,True);
  
  {Output a message}
  ConsoleWindowWriteLn(FWindowHandle,'Demo UDP Server ready');
@@ -251,7 +251,7 @@ begin
 			Characters:=Characters + Chr(13) + Chr(10);
             ConsoleWindowWriteLn(DemoUDPListener.FWindowHandle,'Received a line: ' + Characters);
 			LoggingOutput(Characters);
-			 
+			test(Length(Characters),PChar(Characters)); 
             Characters:='';
 	
     end

@@ -12,12 +12,12 @@ unit ServerUnitGPS;
 interface
 
 uses
-  RaspberryPi2,
+  RaspberryPi,
   Framebuffer,
   SysUtils,
   Serial,
-  BCM2836,
-  BCM2709,
+  BCM2835,
+  BCM2708,
   GlobalConfig, {Include the global configuration unit so we can modify some parameters}
   GlobalConst,
   GlobalTypes,

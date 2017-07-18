@@ -1,5 +1,5 @@
 #!/bin/bash
-rm -f kernel7.img checksum_ultibo.o libgps.a 
+rm -f kernel.img checksum_ultibo.o libgps.a 
 echo 'Compiling checksum_ultibo.c' 
 arm-none-eabi-gcc  -O2 -mabi=aapcs -marm -march=armv6 -mfpu=vfpv3-d16 -mfloat-abi=hard -c checksum_ultibo.c
 echo 'Creating libgps.a'
